@@ -1,0 +1,65 @@
+{
+	"namespaces": [
+		{
+			"name": "gol",
+			"classname": "GOLService",
+			"methods": [
+				{
+					"name": "getGenerationNumber",
+					"return": "int",
+					"params": [
+					]
+				},
+				{
+					"name": "nextGeneration",
+					"return": "void",
+					"params": [
+					]
+				},
+				{
+					"name": "setColorAndFlipCell",
+					"return": "void",
+					"params": [
+						{
+							"name": "x",
+							"type": "int"
+						},
+						{
+							"name": "y",
+							"type": "int"
+						},
+						{
+							"name": "color",
+							"type": "colorstring"
+						}
+					]
+				},
+				{
+					"name": "getLiveCells",
+					"return": "ColorCells",
+					"params": [
+					]
+				}
+			]
+		}
+	],
+	"paramtypes": [
+		{
+			"name": "int",
+			"prep": "int variable;",
+			"validate": "!args[i]->IsString() || !(istringstream(args[i]) >> variable)",
+			"convert": ""
+		},
+		{
+			"name": "color",
+			"validate": "!args[i]->IsString()",
+			"convert": "Utility.hexStringToColor(std::string(*colorString));"
+		}
+	],
+	"returntypes": [
+		{
+			"name": "ColorCells",
+			"convert": "Utility.jsObjectFromColorCells(returnvariable, isolate);"
+		}
+	]
+}
