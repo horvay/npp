@@ -1,0 +1,11 @@
+{
+	"paramTypes": {
+		"int": {
+			"name": "int",
+			"prep": "int variable;",
+			"validate": "!args[i]->IsString() || !(istringstream(args[i]) >> variable)",
+			"convert": ""
+		}
+	},
+	"returnTypes": {}
+}

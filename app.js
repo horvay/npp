@@ -2,25 +2,28 @@
 
 var paramtype = require('./paramtype.js');
 var returntype = require('./returntype.js');
+var nppfile = require('./nppfile.js');
+var typemanager = require('./typemanager.js');
 var serviceDefinition = require('./example.json');
 
 var cppGeneration = "";
 
-//first cache the types into a data structure
-assert(serviceDefinition.paramtypes, "no paramtypes exists in json.");
-assert(serviceDefinition.returntypes, "no returntypes exists in json.");
+// first cache the types into a data structure
+assert(serviceDefinition.paramTypes, "no paramTypes exists in json.");
+assert(serviceDefinition.returnTypes, "no returnTypes exists in json.");
 assert(serviceDefinition.namespaces, "no namespaces exists in json.");
 
-// create praram type var
-var paramtypes = serviceDefinition.paramtypes;
+// create  type vars
+var paramTypes = serviceDefinition.paramTypes;
+var returnTypes = serviceDefinition.returnTypes;
 
-// create return type var
-var returntypes = serviceDefinition.returntypes;
+// initaie the typemanager
+var typemanager = new typemanager(paramTypes, returnTypes);
 
 // start look for each namespaces
 var namespaces = [];
 serviceDefinition.namespaces.forEach(function (namespace) {
-	namespaces.push(new nppfile(namespace));
+	namespaces.push(new nppfile(namespace, typemanager));
 });
 
 // loop through generated nppfiles and create cpp file
