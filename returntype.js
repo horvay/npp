@@ -25,7 +25,7 @@ module.exports = class returntype
 		return !!this[_prep];
 	}
 
-	get getConvverterString(index) {
+	get getConverterString(index) {
 		return _standardTransform(this[_convert], index, this[_name]);
 	}
 }

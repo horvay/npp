@@ -63,11 +63,11 @@ module.exports = class nppfile
 				var paramTemplate = this[_typemanager].getParamType(param.type);
 				assert(paramTemplate, "type" + param.type + "is not defined.");
 
-				if (paramTemplate.prep)
-					cppString += addLine(paramTemplate.prep);
+				if (paramTemplate.hasPrep)
+					cppString += addLine(paramTemplate.getPrepString());
 
 				// validation
-				cppString += "		if (!(" + addLine(paramTemplate.validate) + "))";
+				cppString += "		if (!(" + addLine(paramTemplate.getValidateString()) + "))";
 				cppString += "		{";
 				cppString += '			isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "validation failed for param: ' + param.name + '")));';
 				cppString += "			return;";
@@ -75,7 +75,7 @@ module.exports = class nppfile
 
 				// conversion
 				cppString += addLine();
-				cppString += addLine(paramTemplate.convert);
+				cppString += addLine(paramTemplate.getConverterString());
 				cppString += addLine();
 
 				// add to praram string for service call

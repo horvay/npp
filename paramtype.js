@@ -35,11 +35,18 @@ module.exports = class paramtype
 		return !!this[_prep];
 	}
 
-	get getValidateString(index) {
+	getPrepString(index)
+	{
+		return _standardTransform(this[_prep], index, this[_name]);
+	}
+
+	getValidateString(index) 
+	{
 		return _standardTransform(this[_validate], index, this[_name]);
 	}
 
-	get getConvverterString(index) {
+	getConverterString(index) 
+	{
 		return _standardTransform(this[_convert], index, this[_name]);
 	}
 }
