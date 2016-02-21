@@ -6,15 +6,15 @@ var _prep = Symbol();
 
 module.exports = class returntype 
 {
-	constructor(name, convert, prep) {
-		this[_name] = name; 
+	constructor(rawReturnObject) {
+		this[_name] = rawReturnObject.name; 
 		
-		if (prep) 
+		if (rawReturnObject.prep) 
 		{
-			this[_prep] = prep;
+			this[_prep] = rawReturnObject.prep;
 		} 
 		
-			this[_convert] = convert;
+			this[_convert] = rawReturnObject.convert;
 	}
 
 	get name() {

@@ -43,23 +43,19 @@
 			]
 		}
 	],
-	"paramTypes": [
+	"paramTypes": 
+	{
+		"color": 
 		{
-			"name": "int",
-			"prep": "int variable;",
-			"validate": "!args[i]->IsString() || !(istringstream(args[i]) >> variable)",
-			"convert": ""
-		},
-		{
-			"name": "color",
 			"validate": "!args[i]->IsString()",
 			"convert": "Utility::hexStringToColor(std::string(*colorString));"
 		}
-	],
-	"returnTypes": [
+	},
+	"returnTypes": 
+	{
+		"ColorCells": 
 		{
-			"name": "ColorCells",
 			"convert": "Utility::jsObjectFromColorCells(returnvariable, isolate);"
 		}
-	]
+	}
 }

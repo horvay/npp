@@ -1,7 +1,5 @@
 "use strict";
 
-var paramtype = require('./paramtype.js');
-var returntype = require('./returntype.js');
 var nppfile = require('./nppfile.js');
 var typemanager = require('./typemanager.js');
 var serviceDefinition = require('./example.json');

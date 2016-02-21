@@ -3,9 +3,13 @@
 		"int": {
 			"name": "int",
 			"prep": "int variable;",
-			"validate": "!args[i]->IsString() || !(istringstream(args[i]) >> variable)",
+			"validate": "args[i]->IsString() && (istringstream(args[i]) >> variable)",
 			"convert": ""
 		}
 	},
-	"returnTypes": {}
+	"returnTypes": {
+		"int": {
+			"convert": "Number::New(isolate, returnvariable)"
+		}
+	}
 }

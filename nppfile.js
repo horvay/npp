@@ -26,6 +26,8 @@ module.exports = class nppfile
 
 		if (namespace.returntypes)
 			this[_typemanager].extendreturns(namespace.returntypes);
+
+		this[_typemanager].processTypes();
 	}
 
 	generateFile() 
@@ -39,6 +41,7 @@ module.exports = class nppfile
 	{
 		var cppString = "";
 
+		// cpp file setup stuff
 		cppString += addLine("#include <node.h>");
 		cppString += addLine();
 		cppString += addLine("using namespace v8;");
@@ -52,7 +55,47 @@ module.exports = class nppfile
 		namespace.methods.forEach(function(method) {
 			cppString += addLine("		void " + method.name + "(const FunctionalCallbackInfo<Value>& args) ");
 			cppString += addLine("		{");
-			cppString += addLine("		");
+			
+			// loop through each paramtype
+			var params = "serfartalot"; // stupid way to remove the first comma
+			method.params.forEach(function(param) {
+				// create validation and conversion
+				var paramTemplate = this[_typemanager].getParamType(param.type);
+				assert(paramTemplate, "type" + param.type + "is not defined.");
+
+				if (paramTemplate.prep)
+					cppString += addLine(paramTemplate.prep);
+
+				// validation
+				cppString += "		if (!(" + addLine(paramTemplate.validate) + "))";
+				cppString += "		{";
+				cppString += '			isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "validation failed for param: ' + param.name + '")));';
+				cppString += "			return;";
+				cppString += "		}";
+
+				// conversion
+				cppString += addLine();
+				cppString += addLine(paramTemplate.convert);
+				cppString += addLine();
+
+				// add to praram string for service call
+				params += ", " + param.name;
+			});
+			params.replace("serfaralot, ", "");
+
+			// call the actual service
+			cppString += addLine("			auto result = " + namespace.classname + "::" + method.name + "(" + params + ");");
+
+			// get return type
+			if (method.return != "void")
+			{
+				var returnType = this[_typemanager].getReturnType(method.return);
+				assert(returnType, "return type, " + method.return + ", must be defined");
+
+
+				cppString += addLine("		args.GetReturnValue().Set(" + returnType.convert + ")"
+			}
+
 			cppString += addLine("		}");
 			
 		});

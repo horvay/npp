@@ -7,19 +7,19 @@ var _validate = Symbol();
 
 module.exports = class paramtype 
 {
-	constructor(name, validate, convert, prep) {
-		this[_name] = name; 
+	constructor(rawParamObject) {
+		this[_name] = rawParamObject.name; 
 		
-		if (prep) 
+		if (rawParamObject.prep) 
 		{
-			this[_prep] = prep;
+			this[_prep] = rawParamObject.prep;
 		} 
 		
-		this[_validate] = validate;
+		this[_validate] = rawParamObject.validate;
 		
-		if (convert)
+		if (rawParamObject.convert)
 		{
-			this[_convert] = convert;
+			this[_convert] = rawParamObject.convert;
 		}
 	}
 
