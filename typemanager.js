@@ -1,9 +1,10 @@
 "use strict";
 
-var globaltypes = require('globaltypes.json');
+var globaltypes = require('./globaltypes.json');
 
 var extend = require('extend');
 var clone = require('clone');
+var assert = require('assert');
 
 var paramtype = require('./paramtype.js');
 var returntype = require('./returntype.js');
@@ -13,31 +14,60 @@ var _returnTypes = Symbol();
 var _processedParams = Symbol();
 var _processedReturns = Symbol();
 
+var _id = Symbol();
+
 module.exports = class typemanager 
 {
-	contructor(paramtypes, returntypes)
+	constructor(paramtypes, returntypes)
 	{
-		this[_paramTypes] = globaltypes.paramtypes;
-		this[_returnTypes] = globaltypes.returntypes;
+		this[_paramTypes] = globaltypes.paramTypes;
+		this[_returnTypes] = globaltypes.returnTypes;
+
+		console.log("returNtypes from global: ");
+		console.log(globaltypes.returnTypes + "\n");
 
 		this[_paramTypes] = extend(true, this[_paramTypes], paramtypes);
 		this[_returnTypes] = extend(true, this[_returnTypes], returntypes);
-
-		processTypes();
+		
+		this[_id] = Math.random();
+		console.log("assigned typemanager id: " + this[_id] + "\n");
+		
+		this.processTypes();
 	}
 
 	processTypes()
 	{
-		this[_processedParams] = [];
-		this[_processedReturns] = [];
+		var self = this;
+		self[_processedParams] = [];
+		self[_processedReturns] = [];
 		
-		this[_paramTypes].forEach(function(param) {
-			_processedParams.push(new paramtype(param));
-		});
+		console.log("processing types for typemanager id: " + self[_id] + "\n");
 		
-		this[_returnTypes].forEach(function(returnType) {
-			_processedReturns.push(new returntype(returnType));
-		});
+		if (self[_paramTypes])
+		{
+			Object.keys(self[_paramTypes]).forEach(function(element, key, _array) {
+				// add new key
+				self[_processedParams][element] = new paramtype(this[element]);
+			}, self[_paramTypes]);
+		}
+		
+		if (self[_returnTypes])
+		{
+			Object.keys(self[_returnTypes]).forEach(function(element, key, _array) {
+				// add new key
+				self[_processedReturns][element] = new returntype(this[element]);
+			}, self[_returnTypes]);
+		}
+	}
+
+	get ParamTypes() 
+	{
+		return this[_paramTypes];
+	}
+
+	get ReturnTypes() 
+	{
+		return this[_returnTypes];
 	}
 
 	getParamType(typename)
@@ -48,6 +78,7 @@ module.exports = class typemanager
 
 	getReturnType(typename)
 	{
+		console.log("retrevieving return type from typemanager id: " + this[_id] + "\n");
 		assert(this[_processedReturns][typename], "return type '" + typename + "' does not exists");
 		return this[_processedReturns][typename];
 	}

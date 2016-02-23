@@ -2,6 +2,7 @@
 
 var clone = require('clone');
 var fs = require('fs');
+var assert = require('assert');
 
 var _name = Symbol();
 var _classname = Symbol();
@@ -14,13 +15,20 @@ module.exports = class nppfile
 	constructor(namespace, typemanager) 
 	{
 		assert(namespace.classname, "namespace must have classname.")
-
+		
+		console.log("type manager passed to nppfile:")
+		console.log(typemanager.ReturnTypes);
+		console.log("\n");
+		
 		this[_name] = namespace.name;
 		this[_classname] = namespace.classname;
 		this[_methods] = namespace.methods;
 
 		this[_typemanager] = clone(typemanager);
-
+		console.log("clone type manager: ");
+		console.log(this[_typemanager].ReturnTypes);
+		console.log("\n");
+		
 		if (namespace.paramtypes)
 			this[_typemanager].extendparams(namespace.paramtypes);
 
@@ -32,13 +40,14 @@ module.exports = class nppfile
 
 	generateFile() 
 	{
-		var filestring = getFileString();
+		var filestring = this.getFileString();
 
-
+		return filestring;
 	}
 
 	getFileString()
 	{
+		var self = this;
 		var cppString = "";
 
 		// cpp file setup stuff
@@ -46,13 +55,15 @@ module.exports = class nppfile
 		cppString += addLine();
 		cppString += addLine("using namespace v8;");
 		cppString += addLine();
-		cppString += addLine("namespace " + namespace.name);
+		cppString += addLine("namespace " + self[_name]);
 		cppString += addLine("{");
-		cppString += addLine("	class " + namespace.classname);
+		cppString += addLine("	class " + self[_classname]);
 		cppString += addLine("	{");
 		cppString += addLine("	");
 		
-		namespace.methods.forEach(function(method) {
+		assert(self[_methods], "must have at least one method in namespace " + self[_name]);
+
+		self[_methods].forEach(function(method) {
 			cppString += addLine("		void " + method.name + "(const FunctionalCallbackInfo<Value>& args) ");
 			cppString += addLine("		{");
 			
@@ -60,7 +71,7 @@ module.exports = class nppfile
 			var params = "serfartalot"; // stupid way to remove the first comma
 			method.params.forEach(function(param) {
 				// create validation and conversion
-				var paramTemplate = this[_typemanager].getParamType(param.type);
+				var paramTemplate = self[_typemanager].getParamType(param.type);
 				assert(paramTemplate, "type" + param.type + "is not defined.");
 
 				if (paramTemplate.hasPrep)
@@ -84,16 +95,16 @@ module.exports = class nppfile
 			params.replace("serfaralot, ", "");
 
 			// call the actual service
-			cppString += addLine("			auto result = " + namespace.classname + "::" + method.name + "(" + params + ");");
+			cppString += addLine("			auto result = " + self[_classname] + "::" + method.name + "(" + params + ");");
 
 			// get return type
 			if (method.return != "void")
 			{
-				var returnType = this[_typemanager].getReturnType(method.return);
+				var returnType = self[_typemanager].getReturnType(method.return);
 				assert(returnType, "return type, " + method.return + ", must be defined");
 
 
-				cppString += addLine("		args.GetReturnValue().Set(" + returnType.convert + ")"
+				cppString += addLine("		args.GetReturnValue().Set(" + returnType.convert + ");");
 			}
 
 			cppString += addLine("		}");
@@ -104,10 +115,9 @@ module.exports = class nppfile
 		cppString += addLine("	");
 		cppString += addLine("	}");
 		cppString += addLine("}");
-
+		
+		return cppString;
 	}
-
-
 }
 
 function addLine(string)
