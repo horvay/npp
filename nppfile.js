@@ -1,6 +1,6 @@
 "use strict";
 
-var clone = require('clone');
+var clone = require('clone-deep');
 var fs = require('fs');
 var assert = require('assert');
 
@@ -42,7 +42,19 @@ module.exports = class nppfile
 	{
 		var filestring = this.getFileString();
 
-		return filestring;
+		// lame ass way to do nothing if the file doesn't exist at all
+		try 
+		{
+			stats = fs.lstatSync(this[_name] + ".cpp");
+			if (stats.isFile())
+				fs.unlinkSync(this[_name] + ".cpp");
+		}
+		catch (e)
+		{}
+
+		fs.appendFileSync(this[_name] + ".cpp", filestring);
+
+		return this[_name] + ".cpp";
 	}
 
 	getFileString()
@@ -57,17 +69,18 @@ module.exports = class nppfile
 		cppString += addLine();
 		cppString += addLine("namespace " + self[_name]);
 		cppString += addLine("{");
-		cppString += addLine("	class " + self[_classname]);
-		cppString += addLine("	{");
-		cppString += addLine("	");
+		cppString += addLine("class " + self[_classname]);
+		cppString += addLine("{");
+		cppString += addLine("");
 		
 		assert(self[_methods], "must have at least one method in namespace " + self[_name]);
 
 		self[_methods].forEach(function(method) {
-			cppString += addLine("		void " + method.name + "(const FunctionalCallbackInfo<Value>& args) ");
-			cppString += addLine("		{");
+			cppString += addLine("void " + method.name + "(const FunctionalCallbackInfo<Value>& args) ");
+			cppString += addLine("{");
 			
 			// loop through each paramtype
+			var index = 0;
 			var params = "serfartalot"; // stupid way to remove the first comma
 			method.params.forEach(function(param) {
 				// create validation and conversion
@@ -75,27 +88,28 @@ module.exports = class nppfile
 				assert(paramTemplate, "type" + param.type + "is not defined.");
 
 				if (paramTemplate.hasPrep)
-					cppString += addLine(paramTemplate.getPrepString());
+					cppString += addLine("" + paramTemplate.getPrepString(index));
 
 				// validation
-				cppString += "		if (!(" + addLine(paramTemplate.getValidateString()) + "))";
-				cppString += "		{";
-				cppString += '			isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "validation failed for param: ' + param.name + '")));';
-				cppString += "			return;";
-				cppString += "		}";
+				cppString += addLine("if (!(" + paramTemplate.getValidateString(index) + "))");
+				cppString += addLine("{");
+				cppString += addLine('isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "validation failed for param: ' + param.name + '")));');
+				cppString += addLine("return;");
+				cppString += addLine("}");
 
 				// conversion
 				cppString += addLine();
-				cppString += addLine(paramTemplate.getConverterString());
+				cppString += addLine(paramTemplate.getConverterString(index));
 				cppString += addLine();
 
 				// add to praram string for service call
 				params += ", " + param.name;
+				index++;
 			});
-			params.replace("serfaralot, ", "");
+			params = params.replace("serfartalot, ", "").replace("serfartalot", "");
 
 			// call the actual service
-			cppString += addLine("			auto result = " + self[_classname] + "::" + method.name + "(" + params + ");");
+			cppString += addLine("auto result = " + self[_classname] + "::" + method.name + "(" + params + ");");
 
 			// get return type
 			if (method.return != "void")
@@ -104,26 +118,40 @@ module.exports = class nppfile
 				assert(returnType, "return type, " + method.return + ", must be defined");
 
 
-				cppString += addLine("		args.GetReturnValue().Set(" + returnType.convert + ");");
+				cppString += addLine("args.GetReturnValue().Set(" + returnType.getConverterString() + ");");
 			}
 
-			cppString += addLine("		}");
-			
+			cppString += addLine("}");
+			index++;
 		});
 
-		cppString += addLine("	auto* isolate = args.GetIsolate();");
-		cppString += addLine("	");
-		cppString += addLine("	}");
+		cppString += addLine("");
+		cppString += addLine("};");
 		cppString += addLine("}");
 		
 		return cppString;
 	}
 }
 
+var indent = 0;
 function addLine(string)
 {
 	if(string)
-		return string + "\n";
+	{
+		if (string.includes("}"))
+			indent--;
+
+		var indentstring = "";
+		for (var i = 0; i < indent; i++)
+		{
+			indentstring += "	";
+		}
+
+		if (string.includes("{"))
+			indent++;
+		
+		return indentstring + string + "\n";
+	}
 	else
 		return "\n";
 }

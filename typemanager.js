@@ -3,7 +3,6 @@
 var globaltypes = require('./globaltypes.json');
 
 var extend = require('extend');
-var clone = require('clone');
 var assert = require('assert');
 
 var paramtype = require('./paramtype.js');
@@ -47,7 +46,7 @@ module.exports = class typemanager
 		{
 			Object.keys(self[_paramTypes]).forEach(function(element, key, _array) {
 				// add new key
-				self[_processedParams][element] = new paramtype(this[element]);
+				self[_processedParams][element] = new paramtype(this[element], element);
 			}, self[_paramTypes]);
 		}
 		
@@ -55,7 +54,7 @@ module.exports = class typemanager
 		{
 			Object.keys(self[_returnTypes]).forEach(function(element, key, _array) {
 				// add new key
-				self[_processedReturns][element] = new returntype(this[element]);
+				self[_processedReturns][element] = new returntype(this[element], element);
 			}, self[_returnTypes]);
 		}
 	}

@@ -7,8 +7,15 @@ var _validate = Symbol();
 
 module.exports = class paramtype 
 {
-	constructor(rawParamObject) {
-		this[_name] = rawParamObject.name; 
+	constructor(rawParamObject, keyname) {
+		console.log("setting up param");
+		console.log(keyname);
+		console.log(rawParamObject.prep);
+		console.log(rawParamObject.validate);
+		console.log(rawParamObject.convert);
+		console.log("\n");
+
+		this[_name] = keyname; 
 		
 		if (rawParamObject.prep) 
 		{
@@ -47,13 +54,14 @@ module.exports = class paramtype
 
 	getConverterString(index) 
 	{
-		return _standardTransform(this[_convert], index, this[_name]);
+		return this[_convert] ? _standardTransform(this[_convert], index, this[_name]) : "";
 	}
 }
 
 function _standardTransform(formatstring, index, name) {
+	console.log(name + " : " + formatstring);
 	// put in the actual index
-	var validatestrinng = formatstring.replace("[i]", "[" + index.toString() + "]");
+	var validatestring = formatstring.replace("[i]", "[" + index.toString() + "]");
 	// replace the variable with the actual variable name
 	return validatestring.replace("variable", name);
 }

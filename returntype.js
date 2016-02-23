@@ -6,16 +6,16 @@ var _prep = Symbol();
 
 module.exports = class returntype 
 {
-	constructor(rawReturnObject) 
+	constructor(rawReturnObject, keyname) 
 	{
-		this[_name] = rawReturnObject.name; 
+		this[_name] = keyname; 
 		
 		if (rawReturnObject.prep) 
 		{
 			this[_prep] = rawReturnObject.prep;
 		} 
 		
-			this[_convert] = rawReturnObject.convert;
+		this[_convert] = rawReturnObject.convert;
 	}
 
 	get name() 
@@ -28,18 +28,17 @@ module.exports = class returntype
 		return !!this[_prep];
 	}
 	
-	getPrepString(index)
+	getPrepString()
 	{
-		return _standardTransform(this[_prep], index, this[_name]);
+		return _standardTransform(this[_prep], this[_name]);
 	}
 
-	getConverterString(index) 
+	getConverterString() 
 	{
-		return _standardTransform(this[_convert], index, this[_name]);
+		return _standardTransform(this[_convert], this[_name]);
 	}
 }
 
-function _standardTransform(formatstring, index, name) {
-	var validatestrinng = formatstring.replace("[i]", "[" + index.toString() + "]");
-	return validatestring.replace("returnvariable", name);
+function _standardTransform(formatstring, name) {
+	return formatstring.replace("returnvariable", name);
 }
